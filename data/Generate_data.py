@@ -33,7 +33,7 @@ def nextPrime(N):
     return prime
 
 def find_firsts(n=256):
-    first_primes = [2,3]
+    first_primes = [3]
     prod = 2*3
     while (prod <= 2**n):
         next_prime = nextPrime(first_primes[-1])
