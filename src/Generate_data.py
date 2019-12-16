@@ -2,7 +2,6 @@
 # coding: utf-8
 
 from Crypto.Util import number
-import random
 import math
 import numpy as np
 from collections import namedtuple
@@ -17,8 +16,8 @@ def isPrime(n):
     if (n<=3): return True
     if (n%2==0 or n%3==0):
         return False
-    for i in range(5,int(math.sqrt(n)+1),6):
-        if (n%i ==0 or n%(i+2)==0):
+    for i in range(5, int(math.sqrt(n) + 1), 6):
+        if (n % i == 0 or n % (i+2) == 0):
             return False
     return True
 
@@ -89,3 +88,4 @@ def generate_data(n_bits = 256, n_primes = 100):
     p, n = get_mods(semiprimes, moduli)
     return create_ntuple(p, n, moduli)
 
+print(generate_data())
