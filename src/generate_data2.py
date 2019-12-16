@@ -6,48 +6,57 @@ import math
 import numpy as np
 from collections import namedtuple
 
+
 def generate_primes(n=256, l=100):
-    lst = [(number.getPrime(n//2),number.getPrime(n//2)) for i in range(l)]
-    sem = [(ele[0]*ele[1], min(ele[0],ele[1])) for ele in lst]
+    lst = [(number.getPrime(n//2), number.getPrime(n//2)) for i in range(l)]
+    sem = [(ele[0]*ele[1], min(ele[0], ele[1])) for ele in lst]
     return sem
 
-def isPrime(n):
-    if (n<=1): return False
-    if (n<=3): return True
-    if (n%2==0 or n%3==0):
+
+def is_prime(n):
+    if n <= 1:
+        return False
+    if n <= 3:
+        return True
+    if n % 2 == 0 or n % 3 == 0:
         return False
     for i in range(5, int(math.sqrt(n) + 1), 6):
-        if (n % i == 0 or n % (i+2) == 0):
+        if n % i == 0 or n % (i+2) == 0:
             return False
     return True
 
-def nextPrime(N):
-    if (N<=1): return 2
-    prime = N
+
+def next_prime(n):
+    if n <= 1:
+        return 2
+    prime = n
     found = False
-    while (not found):
+    while not found:
         prime = prime + 2
-        if (isPrime(prime) == True):
+        if is_prime(prime):
             found = True
     return prime
+
 
 def find_firsts(n=256):
     first_primes = [3]
     prod = 2*3
-    while (prod <= 2**n):
-        next_prime = nextPrime(first_primes[-1])
-        first_primes.append(next_prime)
-        prod = prod*next_prime
+    while prod <= 2**n:
+        next_prime_number = next_prime(first_primes[-1])
+        first_primes.append(next_prime_number)
+        prod = prod*next_prime_number
     return first_primes
 
+
 def get_mods(semiprimes, first_primes):
-    p_mods = np.zeros((len(semiprimes),len(first_primes)))
-    n_mods = np.zeros((len(semiprimes),len(first_primes)))
+    p_mods = np.zeros((len(semiprimes), len(first_primes)))
+    n_mods = np.zeros((len(semiprimes), len(first_primes)))
     for i in range(p_mods.shape[0]):
         for j in range(p_mods.shape[1]):
-            p_mods[i,j] = semiprimes[i][1]%first_primes[j]
-            n_mods[i,j] = semiprimes[i][0]%first_primes[j]
+            p_mods[i, j] = semiprimes[i][1] % first_primes[j]
+            n_mods[i, j] = semiprimes[i][0] % first_primes[j]
     return p_mods, n_mods
+
 
 def translate(p, n, m):
     p_x = np.zeros(p.shape)
@@ -55,15 +64,18 @@ def translate(p, n, m):
     n_x = np.zeros(n.shape)
     n_y = np.zeros(n.shape)
     for i in range(p_x.shape[0]):
-            for j in range(p_x.shape[1]):
-                p_x[i,j] = math.cos(2*math.pi*p[i,j]/m[j])
-                p_y[i,j] = math.sin(2*math.pi*p[i,j]/m[j])
-                n_x[i,j] = math.cos(2*math.pi*n[i,j]/m[j])
-                n_y[i,j] = math.sin(2*math.pi*n[i,j]/m[j])
+        for j in range(p_x.shape[1]):
+            p_temp = 2*math.pi*p[i, j]/m[j]
+            p_x[i, j] = math.cos(p_temp)
+            p_y[i, j] = math.sin(p_temp)
+            n_temp = 2*math.pi*n[i, j]/m[j]
+            n_x[i, j] = math.cos(n_temp)
+            n_y[i, j] = math.sin(n_temp)
     return p_x, p_y, n_x, n_y
 
+
 def create_ntuple(p, n, m):
-    p_x,p_y,n_x,n_y = translate(p, n, m)
+    p_x, p_y, n_x, n_y = translate(p, n, m)
     t_input = []
     t_output = []
     for i in range(p_x.shape[0]):
@@ -73,19 +85,21 @@ def create_ntuple(p, n, m):
         row_output = [1]
         row_output.extend(p_x[i])
         row_output.extend(p_y[i])
-        
+
         t_input.append(row_input)
         t_output.append(row_output)
-    
-    TrainData = namedtuple('train_v1',['input','output'])
-    return TrainData(t_input,t_output)
 
-def generate_data(n_bits = 256, n_primes = 100): 
+    TrainData = namedtuple('train_v1', ['input', 'output'])
+    return TrainData(t_input, t_output)
+
+
+def generate_data(n_bits=256, n_primes=100):
     """Main function, which creates the training data with n_primes nr of datapoints 
     with n_bits nr of bits of the to be factorized semiprimes"""
     semiprimes = generate_primes(n_bits, n_primes)
     moduli = find_firsts()
     p, n = get_mods(semiprimes, moduli)
     return create_ntuple(p, n, moduli)
+
 
 print(generate_data())
