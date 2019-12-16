@@ -6,6 +6,7 @@ import numpy as np
 # represented by a list of float values.
 DataPair = namedtuple("DataPair", ["input", "output"])
 
+
 class LMGS:
     """ LMGS is the abbreviation of Linear Multivariate Gaussian System. An LMGS assumes that data behaves like a 2D
     multivariate normal distribution, where the mean is a linear combination of the input data. And the covariance is a
