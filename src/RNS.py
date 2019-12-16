@@ -5,7 +5,7 @@ class RNS:
         self.moduli = self.first_primes(bit_length)
 
     def transform(self, input):
-        return [num % mod for num, mod in zip(input, self.moduli)]
+        return [input % mod for mod in self.moduli]
 
     def is_prime(self, possible_prime, prime_list):
         until = math.sqrt(possible_prime)

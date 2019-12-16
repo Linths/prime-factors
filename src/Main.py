@@ -1,7 +1,20 @@
-from src.GenerateData import GenerateData
-from src.RNS import RNS
+from GenerateData import GenerateData as gd
+from RNS import RNS
+from LMGS import *
+import pickle
 
-bit_length = 256
-data = GenerateData().generate_data(1000, bit_length)
-rns = RNS(bit_length)
-data = rns.transform()
+def train():
+    bit_length = 256
+    sample_size = 1000
+    # data is a list of Datapairs (as many as sample_size)
+    try:
+        train_data = pickle.load(open("train_data.p", "rb"))
+    except:
+        train_data = gd.generate_data(sample_size, bit_length)
+        pickle.dump(train_data, open("train_data.p", "wb"))
+    rns = RNS(bit_length)
+    train_data = [DataPair(rns.transform(x[0]), rns.transform(x[1])) for x in train_data]
+    print(train_data)
+
+if __name__ == "__main__":
+    train()
