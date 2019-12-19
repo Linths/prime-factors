@@ -11,7 +11,6 @@ class GeneratedData:
     def __init__(self, n_bits=256, n_datapoints=100):
         self.n_bits = n_bits
         self.n_datapoints = n_datapoints
-        self.DataPair = namedtuple('DataPair', ['input', 'output','input_OG','output_OG'])
     
         self.generate_primes()
         self.find_firsts()
@@ -58,7 +57,6 @@ class GeneratedData:
             next_prime_number = self.next_prime(self.moduli[-1])
             self.moduli.append(next_prime_number)
             prod = prod*next_prime_number
-    
     
     def get_mods(self):
         self.pmod = np.zeros((len(self.semiprimes), len(self.moduli)))
@@ -108,7 +106,7 @@ class GeneratedData:
         for i, m in enumerate(self.moduli):
             ls = []
             for j, ip in enumerate(self.t_inp):
-                ls.append(self.DataPair(ip, self.t_outp[i][j], self.semiprimes[j][0], self.semiprimes[j][1]))
+                ls.append(DataPair(ip, self.t_outp[i][j], self.semiprimes[j][0], self.semiprimes[j][1]))
             self.datapairs[m] = ls
     
     

@@ -3,8 +3,8 @@ from collections import namedtuple
 import numpy as np
 
 # A Data Pair is a combination of output labels that belongs to given input values. Both input and output values are
-# represented by a list of float values.
-DataPair = namedtuple("DataPair", ["input", "output"])
+# represented by a list of float values. Input_OG and output_OG are the actual input and output (not in RNG).
+DataPair = namedtuple('DataPair', ['input', 'output','input_OG','output_OG'])
 
 
 class LMGS:
