@@ -10,6 +10,7 @@ from collections import namedtuple
 def generate_primes(n=256, l=100):
     lst = [(number.getPrime(n//2), number.getPrime(n//2)) for i in range(l)]
     sem = [(ele[0]*ele[1], min(ele[0], ele[1])) for ele in lst]
+    print(sem)
     return sem
 
 
@@ -74,32 +75,53 @@ def translate(p, n, m):
     return p_x, p_y, n_x, n_y
 
 
-def create_ntuple(p, n, m):
-    p_x, p_y, n_x, n_y = translate(p, n, m)
+def create_input(n_x, n_y):
     t_input = []
-    t_output = []
-    for i in range(p_x.shape[0]):
+    for i in range(n_x.shape[0]):
         row_input = [1]
         row_input.extend(n_x[i])
-        row_input.extend(n_y[i])
-        row_output = [1]
-        row_output.extend(p_x[i])
-        row_output.extend(p_y[i])
-
+        row_input.extend(n_y[i])        
         t_input.append(row_input)
-        t_output.append(row_output)
+    return t_input
 
-    TrainData = namedtuple('train_v1', ['input', 'output'])
-    return TrainData(t_input, t_output)
+
+def create_output(p_x, p_y, i):
+    t_output = []
+    for p in range(len(p_x)):
+        row_output = [p_x[p,i], p_y[p,i]]
+        t_output.append(row_output)
+    return t_output
+
+
+def create_datapairs(inp, outp, moduli):
+    dp_dict = {}
+    for i, m in enumerate(moduli):
+        ls = []
+        for j, ip in enumerate(inp):
+            ls.append((ip, outp[i][j]))
+        dp_dict[m] = ls
+    return dp_dict
 
 
 def generate_data(n_bits=256, n_primes=100):
     """Main function, which creates the training data with n_primes nr of datapoints 
     with n_bits nr of bits of the to be factorized semiprimes"""
+    
+    print(n_bits)
+    print(n_primes)
+    
     semiprimes = generate_primes(n_bits, n_primes)
-    moduli = find_firsts()
+    moduli = find_firsts(n_bits)
     p, n = get_mods(semiprimes, moduli)
-    return create_ntuple(p, n, moduli)
+    
+    p_x, p_y, n_x, n_y = translate(p, n, moduli)
+    t_inp = create_input(n_x, n_y)
+    
+    t_outp = []
+    for i, m in enumerate(moduli):
+        outp = create_output(p_x, p_y, i)
+        t_outp.append(outp)
+    
+    datapairs = create_datapairs(t_inp, t_outp, moduli)
 
-
-print(generate_data())
+    return datapairs
