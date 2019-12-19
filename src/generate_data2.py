@@ -5,12 +5,13 @@ from Crypto.Util import number
 import math
 import numpy as np
 from collections import namedtuple
+from lmgs import *
 
 
 def generate_primes(n=256, l=100):
     lst = [(number.getPrime(n//2), number.getPrime(n//2)) for i in range(l)]
     sem = [(ele[0]*ele[1], min(ele[0], ele[1])) for ele in lst]
-    print(sem)
+    # print(sem)
     return sem
 
 
@@ -98,7 +99,7 @@ def create_datapairs(inp, outp, moduli):
     for i, m in enumerate(moduli):
         ls = []
         for j, ip in enumerate(inp):
-            ls.append((ip, outp[i][j]))
+            ls.append(DataPair(ip, outp[i][j]))
         dp_dict[m] = ls
     return dp_dict
 
@@ -107,8 +108,8 @@ def generate_data(n_bits=256, n_primes=100):
     """Main function, which creates the training data with n_primes nr of datapoints 
     with n_bits nr of bits of the to be factorized semiprimes"""
     
-    print(n_bits)
-    print(n_primes)
+    # print(n_bits)
+    # print(n_primes)
     
     semiprimes = generate_primes(n_bits, n_primes)
     moduli = find_firsts(n_bits)

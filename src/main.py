@@ -9,13 +9,12 @@ BIT_LENGTH = 256
 NO_TRAIN = 1000
 NO_TEST = 10
 TRAIN_FILE = "train_data.p"
-models = {}
 
 def train():
-    if os.path.isfile(TRAIN_FILE):
-        print ("File exist")
-    else:
-        print ("File not exist")
+    # if os.path.isfile(TRAIN_FILE):
+    #     print ("File exist")
+    # else:
+    #     print ("File not exist")
     try:
         train_data = pickle.load(open(TRAIN_FILE, "rb"))
     except:
@@ -23,20 +22,25 @@ def train():
         pickle.dump(train_data, open(TRAIN_FILE, "wb"))
     # train_data is a dictionary with as key the specific feature j (the RNS modulo) and as value
     # a list of Datapairs (representing every inputs' prime factor in the corresponding feature)
-    models = {j : LMGS(datapairs) for j,datapairs in train_data.items()}
+    print(train_data.keys())
+    # models = {j : LMGS(train_data=train_data[j]) for j in train_data.keys()}
+    models = {j : LMGS(train_data=train_data[j]) for j in list(train_data)[0:3]}
+    return models
 
-def test():
+def test(models):
     test_data = generate_data(BIT_LENGTH, NO_TEST)
-    first_test = test_data[0]
-    print(first_test)
+    # inputs = test_data(list(test_data)[0])
+    inputs = [datapair[0] for datapair in list(test_data.values())[0]]
+    first_input = inputs[0]
+    print(first_input)
     moduli = find_firsts()
     for j, model in models.items():
         print(f"using model {j}")
         possible_outputs = {res : [math.cos(2*math.pi*res/j), math.sin(2*math.pi*res/j)] for res in range(1,j)}
-        likelihoods = {res : model.likelihood(DataPair(first_test[0], out)) for res, out in possible_outputs}
+        likelihoods = {res : model.likelihood(DataPair(first_input, out)) for res, out in possible_outputs.items()}
         print(likelihoods)
         print(f"most likely res = {max(likelihoods, key=likelihoods.get)}")
 
 if __name__ == "__main__":
-    train()
-    test()
+    models = train()
+    test(models)
