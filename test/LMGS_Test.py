@@ -1,4 +1,4 @@
-from src.lmgs import LMGS, DataPair
+from lmgs import LMGS, DataPair
 import unittest
 import numpy as np
 
