@@ -1,1 +1,1 @@
-# semi-factors
+# prime-factors
