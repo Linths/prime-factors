@@ -6,13 +6,18 @@ import math
 import numpy as np
 from collections import namedtuple
 from lmgs import *
+import cProfile
 
 class GeneratedData:
     def __init__(self, n_bits=256, n_datapoints=100):
+        pr = cProfile.Profile()
+        pr.enable()
+
         self.n_bits = n_bits
         self.n_datapoints = n_datapoints
-    
+
         self.generate_primes()
+        
         self.find_firsts()
         self.get_mods()
         self.translate()
@@ -21,6 +26,8 @@ class GeneratedData:
         self.create_output()
         self.create_datapairs()
         
+        pr.disable()
+        pr.print_stats(sort='time')
     
     def generate_primes(self):
         lst = [(number.getPrime(self.n_bits//2), number.getPrime(self.n_bits//2)) for i in range(self.n_datapoints)]

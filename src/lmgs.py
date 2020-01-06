@@ -1,6 +1,7 @@
 import math
 from collections import namedtuple
 import numpy as np
+import cProfile
 
 # A Data Pair is a combination of output labels that belongs to given input values. Both input and output values are
 # represented by a list of float values. Input_OG and output_OG are the actual input and output (not in RNG).
@@ -34,11 +35,17 @@ class LMGS:
                 perfectly fits through the training data then the program raises a Perfect Fit Error, because a
                 Linear Multivariate Gaussian System does not support a sigma equal to zero.
         """
+        pr = cProfile.Profile()
+        pr.enable()
+
         if train_data is not None:
             w0, w1, sigma = self.__train(train_data)
         self.w0 = w0
         self.w1 = w1
         self.sigma = sigma
+        
+        pr.disable()
+        pr.print_stats(sort='time')
 
     def likelihood(self, data_pair: DataPair) -> float:
         """ Check the likelihood (probability density) that given the input of the data pair it produces the output of
