@@ -92,7 +92,7 @@ class GeneratedData:
     
     @staticmethod
     def cos_sin(residue, modulus):
-        temp = 2*math.pi*residue/modulus
+        temp = 2*math.pi*(residue-1)/(modulus-1)
         return math.cos(temp), math.sin(temp)
     
     def create_input(self):
@@ -102,7 +102,6 @@ class GeneratedData:
             row_input.extend(self.n_x[i])
             row_input.extend(self.n_y[i])        
             self.t_inp.append(row_input)
-    
     
     def create_output(self):
         self.t_outp = []

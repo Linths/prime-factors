@@ -8,11 +8,12 @@ import copy
 import matplotlib.pyplot as plt
 
 BIT_LENGTH = 256 #192 #128  with bit length 256, you get 87 long input, 43 moduli
-NO_TRAIN = 1001 #0
-NO_TEST = 51 #1000
-TRAIN_FILE = f"train_data_{BIT_LENGTH}_#{NO_TRAIN}.p"
-MODEL_FILE = f"models_{BIT_LENGTH}_#{NO_TRAIN}.p"
-TEST_FILE = f"test_data_{BIT_LENGTH}_#{NO_TEST}.p"
+NO_TRAIN = 1000 #0
+NO_TEST = 200 #1000
+DATA_FOLDER = "data/without_zero" 
+TRAIN_FILE = f"{DATA_FOLDER}/train_data_{BIT_LENGTH}_#{NO_TRAIN}.p"
+MODEL_FILE = f"{DATA_FOLDER}/models_{BIT_LENGTH}_#{NO_TRAIN}.p"
+TEST_FILE = f"{DATA_FOLDER}/test_data_{BIT_LENGTH}_#{NO_TEST}.p"
 
 def train():
     # train_data is a dictionary with as key the specific feature j (the RNS modulo) and as value 
@@ -20,11 +21,9 @@ def train():
     try:
         models = pickle.load(open(MODEL_FILE, "rb"))
     except:
-        # Couldn't find model, so build it from train data
-        try:
+        try:        # Couldn't find model, so build it from train data
             train_data = pickle.load(open(TRAIN_FILE, "rb"))
-        except:
-            # Couldn't find train data, so generate it
+        except:     # Couldn't find train data, so generate it
             train_data = GeneratedData(BIT_LENGTH, NO_TRAIN).datapairs
             pickle.dump(train_data, open(TRAIN_FILE, "wb"))
         models = {j : LMGS(train_data=train_data[j]) for j in list(train_data)}
@@ -94,14 +93,14 @@ def test(models):
         allResLiks.append(resLikLog)
 
     # Show average norm_likelihoods per residue class
-    # for j in moduli:
-    #     plt.title(f"Normalized likelihoods for residue class {j} averaged over {NO_TEST} runs")
-    #     plt.bar(tuple(range(1,j)), np.average(allNormLiks[j], axis=0))
-    #     plt.axhline(y=1/(j-1),linewidth=1, color='r')
-    #     axes = plt.axes()
-    #     # axes.set_ylim([0, 1])
-    #     plt.show()
-    #     plt.close()
+    for j in moduli:
+        plt.title(f"Normalized likelihoods for residue class {j} averaged over {NO_TEST} runs")
+        plt.bar(tuple(range(1,j)), np.average(allNormLiks[j], axis=0))
+        plt.axhline(y=1/(j-1),linewidth=1, color='r')
+        axes = plt.axes()
+        # axes.set_ylim([0, 1])
+        plt.show()
+        plt.close()
     
     allRanks = np.asarray(allRanks)
     avgRanks = np.average(allRanks, axis=0)
