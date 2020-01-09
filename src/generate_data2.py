@@ -10,8 +10,8 @@ import cProfile
 
 class GeneratedData:
     def __init__(self, n_bits=256, n_datapoints=100):
-        pr = cProfile.Profile()
-        pr.enable()
+        # pr = cProfile.Profile()
+        # pr.enable()
 
         self.n_bits = n_bits
         self.n_datapoints = n_datapoints
@@ -26,8 +26,8 @@ class GeneratedData:
         self.create_output()
         self.create_datapairs()
         
-        pr.disable()
-        pr.print_stats(sort='time')
+        # pr.disable()
+        # pr.print_stats(sort='time')
     
     def generate_primes(self):
         lst = [(number.getPrime(self.n_bits//2), number.getPrime(self.n_bits//2)) for i in range(self.n_datapoints)]

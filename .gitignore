@@ -1,3 +1,6 @@
+# Custom for this project
+train_data_256_#40000.p
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
