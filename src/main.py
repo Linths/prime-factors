@@ -15,16 +15,18 @@ MODEL_FILE = f"models_{BIT_LENGTH}_#{NO_TRAIN}.p"
 TEST_FILE = f"test_data_{BIT_LENGTH}_#{NO_TEST}.p"
 
 def train():
-    try:
-        train_data = pickle.load(open(TRAIN_FILE, "rb"))
-    except:
-        train_data = GeneratedData(BIT_LENGTH, NO_TRAIN).datapairs
-        pickle.dump(train_data, open(TRAIN_FILE, "wb"))
     # train_data is a dictionary with as key the specific feature j (the RNS modulo) and as value 
     # a list of Datapairs (representing every inputs' prime factor in the corresponding feature)
     try:
         models = pickle.load(open(MODEL_FILE, "rb"))
     except:
+        # Couldn't find model, so build it from train data
+        try:
+            train_data = pickle.load(open(TRAIN_FILE, "rb"))
+        except:
+            # Couldn't find train data, so generate it
+            train_data = GeneratedData(BIT_LENGTH, NO_TRAIN).datapairs
+            pickle.dump(train_data, open(TRAIN_FILE, "wb"))
         models = {j : LMGS(train_data=train_data[j]) for j in list(train_data)}
         pickle.dump(models, open(MODEL_FILE, "wb"))
     return models
