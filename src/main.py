@@ -8,8 +8,8 @@ import copy
 import matplotlib.pyplot as plt
 
 BIT_LENGTH = 256 #192 #128  with bit length 256, you get 87 long input, 43 moduli
-NO_TRAIN = 40000 #0
-NO_TEST = 50 #1000
+NO_TRAIN = 1001 #0
+NO_TEST = 51 #1000
 TRAIN_FILE = f"train_data_{BIT_LENGTH}_#{NO_TRAIN}.p"
 MODEL_FILE = f"models_{BIT_LENGTH}_#{NO_TRAIN}.p"
 TEST_FILE = f"test_data_{BIT_LENGTH}_#{NO_TEST}.p"
@@ -59,7 +59,8 @@ def test(models):
         # Per modulo, predict the correct residue
         for j, model in models.items():
             # print(f"using model {j}")
-            possible_outputs = {res : [math.cos(2*math.pi*res/j), math.sin(2*math.pi*res/j)] for res in range(1,j)}
+            # possible_outputs = {res : [math.cos(2*math.pi*res/j), math.sin(2*math.pi*res/j)] for res in range(1,j)}
+            possible_outputs = {res : list(GeneratedData.cos_sin(res, j)) for res in range(1,j)}
             likelihoods = {res : model.likelihood(DataPair(i.input, out, i.input_OG, res)) for res, out in possible_outputs.items()}
             norm_likelihoods = {res : lik / sum(likelihoods.values()) for res, lik in likelihoods.items()}
             # print(norm_likelihoods)
@@ -93,14 +94,14 @@ def test(models):
         allResLiks.append(resLikLog)
 
     # Show average norm_likelihoods per residue class
-    for j in moduli:
-        plt.title(f"Normalized likelihoods for residue class {j} averaged over {NO_TEST} runs")
-        plt.bar(tuple(range(1,j)), np.average(allNormLiks[j], axis=0))
-        plt.axhline(y=1/(j-1),linewidth=1, color='r')
-        axes = plt.axes()
-        # axes.set_ylim([0, 1])
-        plt.show()
-        plt.close()
+    # for j in moduli:
+    #     plt.title(f"Normalized likelihoods for residue class {j} averaged over {NO_TEST} runs")
+    #     plt.bar(tuple(range(1,j)), np.average(allNormLiks[j], axis=0))
+    #     plt.axhline(y=1/(j-1),linewidth=1, color='r')
+    #     axes = plt.axes()
+    #     # axes.set_ylim([0, 1])
+    #     plt.show()
+    #     plt.close()
     
     allRanks = np.asarray(allRanks)
     avgRanks = np.average(allRanks, axis=0)

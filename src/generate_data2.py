@@ -81,13 +81,19 @@ class GeneratedData:
         self.n_y = np.zeros(self.nmod.shape)
         for i in range(self.p_x.shape[0]):
             for j in range(self.p_x.shape[1]):
-                p_temp = 2*math.pi*self.pmod[i, j]/self.moduli[j]
-                self.p_x[i, j] = math.cos(p_temp)
-                self.p_y[i, j] = math.sin(p_temp)
-                n_temp = 2*math.pi*self.nmod[i, j]/self.moduli[j]
-                self.n_x[i, j] = math.cos(n_temp)
-                self.n_y[i, j] = math.sin(n_temp)
+                # p_temp = 2*math.pi*self.pmod[i, j]/self.moduli[j]
+                # self.p_x[i, j] = math.cos(p_temp)
+                # self.p_y[i, j] = math.sin(p_temp)
+                # n_temp = 2*math.pi*self.nmod[i, j]/self.moduli[j]
+                # self.n_x[i, j] = math.cos(n_temp)
+                # self.n_y[i, j] = math.sin(n_temp)
+                self.p_x[i, j], self.p_y[i, j] = GeneratedData.cos_sin(self.pmod[i, j], self.moduli[j])
+                self.n_x[i, j], self.n_y[i, j] = GeneratedData.cos_sin(self.nmod[i, j], self.moduli[j])
     
+    @staticmethod
+    def cos_sin(residue, modulus):
+        temp = 2*math.pi*residue/modulus
+        return math.cos(temp), math.sin(temp)
     
     def create_input(self):
         self.t_inp = []
