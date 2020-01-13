@@ -7,27 +7,42 @@ import os.path
 import copy
 import matplotlib.pyplot as plt
 
-BIT_LENGTH = 256 #192 #128  with bit length 256, you get 87 long input, 43 moduli
-NO_TRAIN = 1000 #0
-NO_TEST = 200 #1000
-DATA_FOLDER = "data/without_zero" 
-TRAIN_FILE = f"{DATA_FOLDER}/train_data_{BIT_LENGTH}_#{NO_TRAIN}.p"
-MODEL_FILE = f"{DATA_FOLDER}/models_{BIT_LENGTH}_#{NO_TRAIN}.p"
-TEST_FILE = f"{DATA_FOLDER}/test_data_{BIT_LENGTH}_#{NO_TEST}.p"
+BIT_LENGTH = 256        # with bit length 256, you get 87 long input, 43 moduli
+NO_TRAIN = 40000
+NO_TEST = 1000
+NO_FEATURES = 5         # -1 means no limit
+NO_GEN_PRIMES = 40000   # Do not change unless we have generated more primes
+DATA_FOLDER = "data"
+DATA_SUBFOLDER = f"{DATA_FOLDER}/without_zero" 
+TRAIN_FILE = f"{DATA_SUBFOLDER}/train_data_{BIT_LENGTH}_#{NO_TRAIN}.p"
+TEST_FILE = f"{DATA_SUBFOLDER}/test_data_{BIT_LENGTH}_#{NO_TEST}.p"
+MODEL_FILE = f"{DATA_SUBFOLDER}/models_{BIT_LENGTH}_#{NO_TRAIN}_{NO_FEATURES}ft.p"
+PRIME_FILE = f"{DATA_FOLDER}/train_primes_#{NO_GEN_PRIMES}.p"
 
 def train():
     # train_data is a dictionary with as key the specific feature j (the RNS modulo) and as value 
-    # a list of Datapairs (representing every inputs' prime factor in the corresponding feature)
+    # a list of Datapairs (representing every inputs' prime factor in the corresponding feature, while its semiprime is represented in every feature still)
     try:
         models = pickle.load(open(MODEL_FILE, "rb"))
     except:
-        try:        # Couldn't find model, so build it from train data
+        print("Model not found. Building it from train data.")
+        try:
             train_data = pickle.load(open(TRAIN_FILE, "rb"))
-        except:     # Couldn't find train data, so generate it
-            train_data = GeneratedData(BIT_LENGTH, NO_TRAIN).datapairs
+        except:
+            if NO_TRAIN <= NO_GEN_PRIMES:
+                print("Train data not found. Retrieving from prime list.")
+                semiprimes = readSemiprimes()[:NO_TRAIN]
+            else:
+                print("Train data not found. Generating primes, this will take some time.")
+                semiprimes = None
+            train_data = GeneratedData(BIT_LENGTH, NO_TRAIN, semiprimes).datapairs
             pickle.dump(train_data, open(TRAIN_FILE, "wb"))
+        if NO_FEATURES != -1:
+            train_data = selectFeatures(train_data, NO_FEATURES)
+        print("Building models. This will take long.")
         models = {j : LMGS(train_data=train_data[j]) for j in list(train_data)}
         pickle.dump(models, open(MODEL_FILE, "wb"))
+    print("Training done.\n")
     return models
 
 def test(models):
@@ -38,9 +53,10 @@ def test(models):
         gd_test = GeneratedData(BIT_LENGTH, NO_TEST)
         pickle.dump(gd_test, open(TEST_FILE, "wb"))
     test_data = gd_test.datapairs
+    if NO_FEATURES != -1:
+        test_data = selectFeatures(test_data, NO_FEATURES)
     moduli = gd_test.moduli
     inputs = list(test_data.values())[0]
-    # allRanks = np.zeros((inputs.length, moduli.length))
 
     # End statistics
     allRanks = []
@@ -50,40 +66,33 @@ def test(models):
     uniformLik = sum(resUniformLik)
     allNormLiks = {j : [] for j in moduli}    # key residues, value list of norm_likelihoods
 
+    # Predict prime factors
     for i in inputs:
-        # print(i)
         bools = []
         resLikLog = []
         ranks = []
         # Per modulo, predict the correct residue
         for j, model in models.items():
-            # print(f"using model {j}")
-            # possible_outputs = {res : [math.cos(2*math.pi*res/j), math.sin(2*math.pi*res/j)] for res in range(1,j)}
             possible_outputs = {res : list(GeneratedData.cos_sin(res, j)) for res in range(1,j)}
             likelihoods = {res : model.likelihood(DataPair(i.input, out, i.input_OG, res)) for res, out in possible_outputs.items()}
             norm_likelihoods = {res : lik / sum(likelihoods.values()) for res, lik in likelihoods.items()}
-            # print(norm_likelihoods)
-            # print(f"sum = {sum(norm_likelihoods)}")
-            allNormLiks[j].append(list(norm_likelihoods.values()))
-
+            
             actual = i.output_OG % j
             predicted = max(norm_likelihoods, key=norm_likelihoods.get)
+            
+            rankActual = sorted(norm_likelihoods, key=norm_likelihoods.get, reverse=True).index(actual) / (j-2)
+            ranks.append(rankActual)
+            # print(norm_likelihoods.get(actual))
+            
+            allNormLiks[j].append(list(norm_likelihoods.values()))
             # print(f"most likely res = {max3(norm_likelihoods)}\nactual res = {actual}")
             # actualIsAboveAvg = norm_likelihoods.get(actual) > 1/(j-1)
             # print(actualIsAboveAvg)
             # bools.append(actualIsAboveAvg)
-
             predictedIsCloseToActual = findPeriodicDist(actual, predicted, j) <= 3 #<= math.ceil((j-1) / 3) / 2
             # print(predictedIsCloseToActual)
             bools.append(predictedIsCloseToActual)
-            
-            rankActual = sorted(norm_likelihoods, key=norm_likelihoods.get, reverse=True).index(actual) / (j-2)
-            # print(f"rank = {rankActual}")
-            ranks.append(rankActual)
-            
-            # print(norm_likelihoods.get(actual))
             resLikLog.append(np.log(norm_likelihoods.get(actual)))
-            # print()
         
         totalLikLog = sum(resLikLog)
         # print(f"{bools}\n#True = {bools.count(True)}\n#False = {bools.count(False)}\n{ranks}")
@@ -96,7 +105,7 @@ def test(models):
     for j in moduli:
         plt.title(f"Normalized likelihoods for residue class {j} averaged over {NO_TEST} runs")
         plt.bar(tuple(range(1,j)), np.average(allNormLiks[j], axis=0))
-        plt.axhline(y=1/(j-1),linewidth=1, color='r')
+        plt.axhline(y=1/(j-1), linewidth=1, color='r')
         axes = plt.axes()
         # axes.set_ylim([0, 1])
         plt.show()
@@ -110,7 +119,7 @@ def test(models):
     plt.title(f"Ranking of the actual residue, per modulo. Averaged over {NO_TEST} runs.")
     axes = plt.axes()
     axes.set_ylim([0, 1])
-    plt.axhline(y=0.5,linewidth=1, color='r')
+    plt.axhline(y=0.5, linewidth=1, color='r')
     plt.show()
     print()
     print(f"--- over {NO_TEST} runs ---")
@@ -119,6 +128,7 @@ def test(models):
     print(f"average log-likelihood: {np.average(allLiks)}")
     print(f"uniform log-likelihood: {uniformLik}")
 
+    print("Testing done.")
 
 def findPeriodicDist(n1, n2, j):
     '''Find the distance between n1 and n2, where numbers are spread from 1..(j-1) and where 1 and j-1 are neighbours. (It wraps and we skip 0!)
@@ -132,7 +142,6 @@ def findPeriodicDist(n1, n2, j):
     dist2 = (j-1) - n2 + n1 
     return min(dist1, dist2)
 
-
 def max3(dictio):
     ''' Determine the top 3 residues with the highest likelihood.
     Or more generally, for a dictionary, the top 3 keys with the highest value. '''
@@ -144,6 +153,37 @@ def max3(dictio):
         dic.pop(highest)
     return result
 
+def readSemiprimes():
+    try:
+        semiprimes = pickle.load(open(PRIME_FILE, "rb"))
+    except:
+        # For one-time use
+        train_data = pickle.load(open(f"data/with_zero_original/train_data_{BIT_LENGTH}_#40000.p", "rb"))
+        semiprimes = [(x.input_OG, x.output_OG) for x in train_data[5]] # take from a random key
+        pickle.dump(semiprimes, open(PRIME_FILE, "wb"))
+    return semiprimes
+
+# For one-time use
+def convertToWithoutZero(semiprimes):
+    train_data = GeneratedData(BIT_LENGTH, NO_TRAIN, semiprimes).datapairs
+    pickle.dump(train_data, open(f"data/without_zero/train_data_{BIT_LENGTH}_#40000.p", "wb"))
+
+def selectFeatures(train_data, num):
+    '''Limit our training data's input fields to only the bias and #num features'''
+    return {j : [limitInputFeatures(dp, num) for dp in datapairs] for j,datapairs in train_data.items()}
+
+def limitInputFeatures(dp, num):
+    '''Limit the input list to only the bias and #num features'''
+    res = [dp.input[0]]
+    for i in range(num):
+        res.append(dp.input[i + 1])
+    mid = math.floor(len(dp.input) / 2)
+    for i in range(num):
+        res.append(dp.input[mid + i + 1])
+    return DataPair(res, dp.output, dp.input_OG, dp.output_OG)
+
 if __name__ == "__main__":
+    # semiprimes = readSemiprimes()
+    # convertToWithoutZero(semiprimes)
     models = train()
     test(models)

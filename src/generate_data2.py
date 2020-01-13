@@ -9,14 +9,17 @@ from lmgs import *
 import cProfile
 
 class GeneratedData:
-    def __init__(self, n_bits=256, n_datapoints=100):
+    def __init__(self, n_bits=256, n_datapoints=100, semiprimes=None):
         # pr = cProfile.Profile()
         # pr.enable()
 
         self.n_bits = n_bits
         self.n_datapoints = n_datapoints
 
-        self.generate_primes()
+        if semiprimes == None:
+            self.generate_primes()
+        else:
+            self.semiprimes = semiprimes
         
         self.find_firsts()
         self.get_mods()
@@ -31,8 +34,7 @@ class GeneratedData:
     
     def generate_primes(self):
         lst = [(number.getPrime(self.n_bits//2), number.getPrime(self.n_bits//2)) for i in range(self.n_datapoints)]
-        self.semiprimes = [(ele[0]*ele[1], min(ele[0], ele[1])) for ele in lst]
-    
+        self.semiprimes = [(ele[0]*ele[1], min(ele[0], ele[1])) for ele in lst] # semiprimes: list of (n, p)
     
     def is_prime(self, n):
         if n <= 1:
@@ -66,6 +68,8 @@ class GeneratedData:
             prod = prod*next_prime_number
     
     def get_mods(self):
+        # pmod: every p in RNS
+        # nmod: every n in RNS
         self.pmod = np.zeros((len(self.semiprimes), len(self.moduli)))
         self.nmod = np.zeros((len(self.semiprimes), len(self.moduli)))
         for i in range(self.pmod.shape[0]):
@@ -75,12 +79,14 @@ class GeneratedData:
     
     
     def translate(self):
+        # p: prime factor
+        # n: semi prime
         self.p_x = np.zeros(self.pmod.shape)
         self.p_y = np.zeros(self.pmod.shape)
         self.n_x = np.zeros(self.nmod.shape)
         self.n_y = np.zeros(self.nmod.shape)
-        for i in range(self.p_x.shape[0]):
-            for j in range(self.p_x.shape[1]):
+        for i in range(self.p_x.shape[0]):      # for every p
+            for j in range(self.p_x.shape[1]):  # for every mod
                 # p_temp = 2*math.pi*self.pmod[i, j]/self.moduli[j]
                 # self.p_x[i, j] = math.cos(p_temp)
                 # self.p_y[i, j] = math.sin(p_temp)
