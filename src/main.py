@@ -6,17 +6,20 @@ import math
 import os.path
 import copy
 import matplotlib.pyplot as plt
+from itertools import combinations_with_replacement
 
 BIT_LENGTH = 256        # with bit length 256, you get 87 long input, 43 moduli
 NO_TRAIN = 40000
 NO_TEST = 1000
 NO_FEATURES = 5         # -1 means no limit
 NO_GEN_PRIMES = 40000   # Do not change unless we have generated more primes
+MAKE_POLY = 2           # -1 means no added polynomial complexity. WARNING: Polynominials will only be made when #features is limited.
+LIM_MODELS = True       # If true, we only use #NO_FEATURES models
 DATA_FOLDER = "data"
-DATA_SUBFOLDER = f"{DATA_FOLDER}/without_zero" 
+DATA_SUBFOLDER = f"{DATA_FOLDER}/without_zero"
 TRAIN_FILE = f"{DATA_SUBFOLDER}/train_data_{BIT_LENGTH}_#{NO_TRAIN}.p"
 TEST_FILE = f"{DATA_SUBFOLDER}/test_data_{BIT_LENGTH}_#{NO_TEST}.p"
-MODEL_FILE = f"{DATA_SUBFOLDER}/models_{BIT_LENGTH}_#{NO_TRAIN}_{NO_FEATURES}ft.p"
+MODEL_FILE = f"{DATA_SUBFOLDER}/models_{BIT_LENGTH}_#{NO_TRAIN}_{NO_FEATURES}ft{MAKE_POLY}po.p"
 PRIME_FILE = f"{DATA_FOLDER}/train_primes_#{NO_GEN_PRIMES}.p"
 
 def train():
@@ -25,7 +28,7 @@ def train():
     try:
         models = pickle.load(open(MODEL_FILE, "rb"))
     except:
-        print("Model not found. Building it from train data.")
+        print("Models not found.")
         try:
             train_data = pickle.load(open(TRAIN_FILE, "rb"))
         except:
@@ -40,7 +43,11 @@ def train():
         if NO_FEATURES != -1:
             train_data = selectFeatures(train_data, NO_FEATURES)
         print("Building models. This will take long.")
-        models = {j : LMGS(train_data=train_data[j]) for j in list(train_data)}
+        if LIM_MODELS and NO_FEATURES != -1:
+            moduli = list(train_data)[:NO_FEATURES]
+        else:
+            moduli = list(train_data)
+        models = {j : LMGS(train_data=train_data[j]) for j in moduli}
         pickle.dump(models, open(MODEL_FILE, "wb"))
     print("Training done.\n")
     return models
@@ -55,7 +62,7 @@ def test(models):
     test_data = gd_test.datapairs
     if NO_FEATURES != -1:
         test_data = selectFeatures(test_data, NO_FEATURES)
-    moduli = gd_test.moduli
+    moduli = list(models)
     inputs = list(test_data.values())[0]
 
     # End statistics
@@ -180,7 +187,23 @@ def limitInputFeatures(dp, num):
     mid = math.floor(len(dp.input) / 2)
     for i in range(num):
         res.append(dp.input[mid + i + 1])
+    
+    # Make polynomial terms
+    if MAKE_POLY != -1:
+        temp = res.copy()
+        res = [f1 * f2 for f1,f2 in combinations_with_replacement(temp, 2)]
+    
     return DataPair(res, dp.output, dp.input_OG, dp.output_OG)
+
+# def limitInputFeaturesWith(dp, num):
+#     '''Limit the input list to only the bias and #num features'''
+#     res = [dp.input[0]]
+#     for i in range(num):
+#         res.append(dp.input[i + 1])
+#     mid = math.floor(len(dp.input) / 2)
+#     for i in range(num):
+#         res.append(dp.input[mid + i + 1])
+#     return DataPair(res, dp.output, dp.input_OG, dp.output_OG)
 
 if __name__ == "__main__":
     # semiprimes = readSemiprimes()

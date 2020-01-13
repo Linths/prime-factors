@@ -100,7 +100,7 @@ class LMGS:
 
         matrix = np.array(matrix)
         equals = np.array(equals)
-        return list(np.linalg.solve(matrix, equals))
+        return list(np.linalg.lstsq(matrix, equals)[0])
 
     def __get_sigma(self, train_data: list, w0: list, w1: list) -> float:
         sigma = 0
