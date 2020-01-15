@@ -7,13 +7,14 @@ import os.path
 import copy
 import matplotlib.pyplot as plt
 from itertools import combinations_with_replacement
+from functools import reduce
 
 BIT_LENGTH = 256        # with bit length 256, you get 87 long input, 43 moduli
 NO_TRAIN = 40000
 NO_TEST = 1000
 NO_FEATURES = 5         # -1 means no limit
 NO_GEN_PRIMES = 40000   # Do not change unless we have generated more primes
-MAKE_POLY = 2           # -1 means no added polynomial complexity. WARNING: Polynominials will only be made when #features is limited.
+MAKE_POLY = 3           # -1 means no added polynomial complexity. WARNING: Polynominials will only be made when #features is limited.
 LIM_MODELS = True       # If true, we only use #NO_FEATURES models
 DATA_FOLDER = "data"
 DATA_SUBFOLDER = f"{DATA_FOLDER}/without_zero"
@@ -191,7 +192,7 @@ def limitInputFeatures(dp, num):
     # Make polynomial terms
     if MAKE_POLY != -1:
         temp = res.copy()
-        res = [f1 * f2 for f1,f2 in combinations_with_replacement(temp, 2)]
+        res = [reduce((lambda a,b: a*b), combi) for combi in combinations_with_replacement(temp, MAKE_POLY)]
     
     return DataPair(res, dp.output, dp.input_OG, dp.output_OG)
 
