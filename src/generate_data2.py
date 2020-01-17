@@ -35,7 +35,7 @@ class GeneratedData:
     
     def generate_primes(self):
         lst = [(number.getPrime(self.n_bits//2), number.getPrime(self.n_bits//2)) for i in range(self.n_datapoints)]
-        self.semiprimes = [(ele[0]*ele[1], max(ele[0], ele[1])) for ele in lst] # semiprimes: list of (n, p)
+        self.semiprimes = [(ele[0]*ele[1], min(ele[0], ele[1])) for ele in lst] # semiprimes: list of (n, p)
     
     def is_prime(self, n):
         if n <= 1:

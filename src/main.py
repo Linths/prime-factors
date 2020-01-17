@@ -115,7 +115,7 @@ def test(models):
         allResLiks.append(resLikLog)
 
     # Show average norm_likelihoods per residue class
-    # Path(STATS_FOLDER).mkdir()
+    Path(STATS_FOLDER).mkdir(exist_ok=True)
     for j in moduli:
         plt.title(f"Normalized likelihoods for residue class {j} averaged over {NO_TEST} runs")
         plt.bar(tuple(range(int(WITHOUT_ZERO),j)), np.average(allNormLiks[j], axis=0))
