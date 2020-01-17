@@ -8,24 +8,29 @@ import copy
 import matplotlib.pyplot as plt
 from itertools import combinations_with_replacement
 from functools import reduce
+from pathlib import Path
 
 BIT_LENGTH = 256        # with bit length 256, you get 87 long input, 43 moduli
+WITHOUT_ZERO = False
+NONE = 0
 NO_TRAIN = 40000
 NO_TEST = 1000
-NO_FEATURES = 5         # -1 means no limit
-NO_GEN_PRIMES = 40000   # Do not change unless we have generated more primes
-MAKE_POLY = 3           # -1 means no added polynomial complexity. WARNING: Polynominials will only be made when #features is limited.
-LIM_MODELS = True       # If true, we only use #NO_FEATURES models
+NO_FEATURES = NONE      # Value NONE means no limit
+NO_GEN_PRIMES = 40000   # DO NOT CHANGE unless we have generated more primes
+MAKE_POLY = NONE        # Value NONE means no added polynomial complexity. WARNING: Polynominials will only be made when #features is limited.
+LIM_MODELS = False      # If true, we only use #NO_FEATURES models
 DATA_FOLDER = "data"
-DATA_SUBFOLDER = f"{DATA_FOLDER}/without_zero"
+DATA_SUBFOLDER = f"{DATA_FOLDER}/with_zero_original"
+STATS_FOLDER = f"{DATA_SUBFOLDER}/stats_{BIT_LENGTH}_#{NO_TRAIN}_#{NO_TEST}_{NO_FEATURES}f{MAKE_POLY}p"
 TRAIN_FILE = f"{DATA_SUBFOLDER}/train_data_{BIT_LENGTH}_#{NO_TRAIN}.p"
 TEST_FILE = f"{DATA_SUBFOLDER}/test_data_{BIT_LENGTH}_#{NO_TEST}.p"
-MODEL_FILE = f"{DATA_SUBFOLDER}/models_{BIT_LENGTH}_#{NO_TRAIN}_{NO_FEATURES}ft{MAKE_POLY}po.p"
+MODEL_FILE = f"{DATA_SUBFOLDER}/models_{BIT_LENGTH}_#{NO_TRAIN}_{NO_FEATURES}f{MAKE_POLY}p.p"
 PRIME_FILE = f"{DATA_FOLDER}/train_primes_#{NO_GEN_PRIMES}.p"
 
 def train():
     # train_data is a dictionary with as key the specific feature j (the RNS modulo) and as value 
     # a list of Datapairs (representing every inputs' prime factor in the corresponding feature, while its semiprime is represented in every feature still)
+    print(MODEL_FILE)
     try:
         models = pickle.load(open(MODEL_FILE, "rb"))
     except:
@@ -41,10 +46,10 @@ def train():
                 semiprimes = None
             train_data = GeneratedData(BIT_LENGTH, NO_TRAIN, semiprimes).datapairs
             pickle.dump(train_data, open(TRAIN_FILE, "wb"))
-        if NO_FEATURES != -1:
+        if NO_FEATURES != NONE:
             train_data = selectFeatures(train_data, NO_FEATURES)
         print("Building models. This will take long.")
-        if LIM_MODELS and NO_FEATURES != -1:
+        if LIM_MODELS and NO_FEATURES != NONE:
             moduli = list(train_data)[:NO_FEATURES]
         else:
             moduli = list(train_data)
@@ -61,7 +66,7 @@ def test(models):
         gd_test = GeneratedData(BIT_LENGTH, NO_TEST)
         pickle.dump(gd_test, open(TEST_FILE, "wb"))
     test_data = gd_test.datapairs
-    if NO_FEATURES != -1:
+    if NO_FEATURES != NONE:
         test_data = selectFeatures(test_data, NO_FEATURES)
     moduli = list(models)
     inputs = list(test_data.values())[0]
@@ -81,14 +86,14 @@ def test(models):
         ranks = []
         # Per modulo, predict the correct residue
         for j, model in models.items():
-            possible_outputs = {res : list(GeneratedData.cos_sin(res, j)) for res in range(1,j)}
+            possible_outputs = {res : list(GeneratedData.cos_sin(res, j)) for res in range(int(WITHOUT_ZERO),j)}
             likelihoods = {res : model.likelihood(DataPair(i.input, out, i.input_OG, res)) for res, out in possible_outputs.items()}
             norm_likelihoods = {res : lik / sum(likelihoods.values()) for res, lik in likelihoods.items()}
             
             actual = i.output_OG % j
             predicted = max(norm_likelihoods, key=norm_likelihoods.get)
             
-            rankActual = sorted(norm_likelihoods, key=norm_likelihoods.get, reverse=True).index(actual) / (j-2)
+            rankActual = sorted(norm_likelihoods, key=norm_likelihoods.get, reverse=True).index(actual) / (j-1-int(WITHOUT_ZERO))
             ranks.append(rankActual)
             # print(norm_likelihoods.get(actual))
             
@@ -97,9 +102,9 @@ def test(models):
             # actualIsAboveAvg = norm_likelihoods.get(actual) > 1/(j-1)
             # print(actualIsAboveAvg)
             # bools.append(actualIsAboveAvg)
-            predictedIsCloseToActual = findPeriodicDist(actual, predicted, j) <= 3 #<= math.ceil((j-1) / 3) / 2
+            # predictedIsCloseToActual = findPeriodicDist(actual, predicted, j) <= 3 #<= math.ceil((j-1) / 3) / 2
             # print(predictedIsCloseToActual)
-            bools.append(predictedIsCloseToActual)
+            # bools.append(predictedIsCloseToActual)
             resLikLog.append(np.log(norm_likelihoods.get(actual)))
         
         totalLikLog = sum(resLikLog)
@@ -110,13 +115,15 @@ def test(models):
         allResLiks.append(resLikLog)
 
     # Show average norm_likelihoods per residue class
+    # Path(STATS_FOLDER).mkdir()
     for j in moduli:
         plt.title(f"Normalized likelihoods for residue class {j} averaged over {NO_TEST} runs")
-        plt.bar(tuple(range(1,j)), np.average(allNormLiks[j], axis=0))
-        plt.axhline(y=1/(j-1), linewidth=1, color='r')
+        plt.bar(tuple(range(int(WITHOUT_ZERO),j)), np.average(allNormLiks[j], axis=0))
+        plt.axhline(y=1/(j-int(WITHOUT_ZERO)), linewidth=1, color='r')
         axes = plt.axes()
         # axes.set_ylim([0, 1])
-        plt.show()
+        # plt.show()
+        plt.savefig(f"{STATS_FOLDER}/normalized likelihoods ({j} of {moduli[-1]}).png")
         plt.close()
     
     allRanks = np.asarray(allRanks)
@@ -128,14 +135,21 @@ def test(models):
     axes = plt.axes()
     axes.set_ylim([0, 1])
     plt.axhline(y=0.5, linewidth=1, color='r')
-    plt.show()
+    # plt.show()
+    plt.savefig(f"{STATS_FOLDER}/normalized ranks per residue.png")
     print()
     print(f"--- over {NO_TEST} runs ---")
     print(f"average log-likelihood, per residue class: {np.average(allResLiks, axis=0)}")
     print(f"uniform log-likelihood, per residue class: {resUniformLik}")
     print(f"average log-likelihood: {np.average(allLiks)}")
     print(f"uniform log-likelihood: {uniformLik}")
-
+    with open(f"{STATS_FOLDER}/summary.txt", "w") as f:
+        f.write(f"BIT_LENGTH = {BIT_LENGTH}\nNO_TRAIN = {NO_TRAIN}\nNO_TEST = {NO_TEST}\nNO_FEATURES = {NO_FEATURES}\nMAKE_POLY = {MAKE_POLY}\nLIM_MODELS = {LIM_MODELS}\nmoduli = {moduli}\n")
+        f.write(f"\n--- over {NO_TEST} runs ---\n")
+        f.write(f"average log-likelihood, per residue class: {np.average(allResLiks, axis=0)}\n")
+        f.write(f"uniform log-likelihood, per residue class: {resUniformLik}\n")
+        f.write(f"average log-likelihood: {np.average(allLiks)}\n")
+        f.write(f"uniform log-likelihood: {uniformLik}\n")
     print("Testing done.")
 
 def findPeriodicDist(n1, n2, j):
@@ -190,21 +204,11 @@ def limitInputFeatures(dp, num):
         res.append(dp.input[mid + i + 1])
     
     # Make polynomial terms
-    if MAKE_POLY != -1:
+    if MAKE_POLY != NONE:
         temp = res.copy()
         res = [reduce((lambda a,b: a*b), combi) for combi in combinations_with_replacement(temp, MAKE_POLY)]
     
     return DataPair(res, dp.output, dp.input_OG, dp.output_OG)
-
-# def limitInputFeaturesWith(dp, num):
-#     '''Limit the input list to only the bias and #num features'''
-#     res = [dp.input[0]]
-#     for i in range(num):
-#         res.append(dp.input[i + 1])
-#     mid = math.floor(len(dp.input) / 2)
-#     for i in range(num):
-#         res.append(dp.input[mid + i + 1])
-#     return DataPair(res, dp.output, dp.input_OG, dp.output_OG)
 
 if __name__ == "__main__":
     # semiprimes = readSemiprimes()

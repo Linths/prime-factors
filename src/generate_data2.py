@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
+from main import WITHOUT_ZERO
 from Crypto.Util import number
 import math
 import numpy as np
@@ -34,7 +35,7 @@ class GeneratedData:
     
     def generate_primes(self):
         lst = [(number.getPrime(self.n_bits//2), number.getPrime(self.n_bits//2)) for i in range(self.n_datapoints)]
-        self.semiprimes = [(ele[0]*ele[1], min(ele[0], ele[1])) for ele in lst] # semiprimes: list of (n, p)
+        self.semiprimes = [(ele[0]*ele[1], max(ele[0], ele[1])) for ele in lst] # semiprimes: list of (n, p)
     
     def is_prime(self, n):
         if n <= 1:
@@ -98,7 +99,7 @@ class GeneratedData:
     
     @staticmethod
     def cos_sin(residue, modulus):
-        temp = 2*math.pi*(residue-1)/(modulus-1)
+        temp = 2*math.pi*(residue-int(WITHOUT_ZERO))/(modulus-int(WITHOUT_ZERO))
         return math.cos(temp), math.sin(temp)
     
     def create_input(self):
