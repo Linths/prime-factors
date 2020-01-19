@@ -14,8 +14,8 @@ WITHOUT_ZERO = True
 
 BIT_LENGTH = 256        # with bit length 256, you get 87 long input, 43 moduli
 NONE = 0
-NO_TRAIN = 1000
-NO_TEST = 200
+NO_TRAIN = 40000
+NO_TEST = 1000
 NO_FEATURES = NONE      # Value NONE means no limit
 NO_GEN_PRIMES = 40000   # DO NOT CHANGE unless we have generated more primes
 MAKE_POLY = NONE        # Value NONE means no added polynomial complexity. WARNING: Polynominials will only be made when #features is limited.
