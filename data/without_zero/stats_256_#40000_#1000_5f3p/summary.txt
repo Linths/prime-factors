@@ -1,10 +1,12 @@
 BIT_LENGTH = 256
 NO_TRAIN = 40000
 NO_TEST = 1000
-NO_FEATURES = 5
+NO_MODS = 5
 MAKE_POLY = 3
 LIM_MODELS = False
 moduli = [3, 5, 7, 11, 13]
+no_moduli = 5
+no_features = 286
 
 --- over 1000 runs ---
 average log-likelihood, per residue class: [-0.70218461 -1.39440662 -1.79728265 -2.30701631 -2.4858769 ]

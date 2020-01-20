@@ -16,16 +16,16 @@ BIT_LENGTH = 256        # with bit length 256, you get 87 long input, 43 moduli
 NONE = 0
 NO_TRAIN = 40000
 NO_TEST = 1000
-NO_FEATURES = 5         # Value NONE means no limit
+NO_MODS = 5             # Value NONE means no limit
 NO_GEN_PRIMES = 40000   # DO NOT CHANGE unless we have generated more primes
 MAKE_POLY = 3           # Value NONE means no added polynomial complexity. WARNING: Polynominials will only be made when #features is limited.
-LIM_MODELS = False      # If true, we only use #NO_FEATURES models
+LIM_MODELS = False      # If true, we only use #NO_MODS models
 DATA_FOLDER = "data"
 DATA_SUBFOLDER = f"{DATA_FOLDER}/without_zero"
-STATS_FOLDER = f"{DATA_SUBFOLDER}/stats_{BIT_LENGTH}_#{NO_TRAIN}_#{NO_TEST}_{NO_FEATURES}f{MAKE_POLY}p"
+STATS_FOLDER = f"{DATA_SUBFOLDER}/stats_{BIT_LENGTH}_#{NO_TRAIN}_#{NO_TEST}_{NO_MODS}f{MAKE_POLY}p"
 TRAIN_FILE = f"{DATA_SUBFOLDER}/train_data_{BIT_LENGTH}_#{NO_TRAIN}.p"
 TEST_FILE = f"{DATA_SUBFOLDER}/test_data_{BIT_LENGTH}_#{NO_TEST}.p"
-MODEL_FILE = f"{DATA_SUBFOLDER}/models_{BIT_LENGTH}_#{NO_TRAIN}_{NO_FEATURES}f{MAKE_POLY}p.p"
+MODEL_FILE = f"{DATA_SUBFOLDER}/models_{BIT_LENGTH}_#{NO_TRAIN}_{NO_MODS}f{MAKE_POLY}p.p"
 PRIME_FILE = f"{DATA_FOLDER}/train_primes_#{NO_GEN_PRIMES}.p"
 
 def train():
@@ -47,11 +47,11 @@ def train():
                 semiprimes = None
             train_data = GeneratedData(BIT_LENGTH, NO_TRAIN, semiprimes).datapairs
             pickle.dump(train_data, open(TRAIN_FILE, "wb"))
-        if NO_FEATURES != NONE:
-            train_data = selectFeatures(train_data, NO_FEATURES)
+        if NO_MODS != NONE:
+            train_data = selectFeatures(train_data, NO_MODS)
         print("Building models. This will take long.")
-        if LIM_MODELS and NO_FEATURES != NONE:
-            moduli = list(train_data)[:NO_FEATURES]
+        if LIM_MODELS and NO_MODS != NONE:
+            moduli = list(train_data)[:NO_MODS]
         else:
             moduli = list(train_data)
         models = {j : LMGS(train_data=train_data[j]) for j in moduli}
@@ -67,10 +67,12 @@ def test(models):
         gd_test = GeneratedData(BIT_LENGTH, NO_TEST)
         pickle.dump(gd_test, open(TEST_FILE, "wb"))
     test_data = gd_test.datapairs
-    if NO_FEATURES != NONE:
-        test_data = selectFeatures(test_data, NO_FEATURES)
+    if NO_MODS != NONE:
+        test_data = selectFeatures(test_data, NO_MODS)
     moduli = list(models)
     inputs = list(test_data.values())[0]
+    no_moduli = len(moduli)
+    no_features = len(inputs[0].input)
 
     # End statistics
     allRanks = []
@@ -145,7 +147,7 @@ def test(models):
     print(f"average log-likelihood: {np.average(allLiks)}")
     print(f"uniform log-likelihood: {uniformLik}")
     with open(f"{STATS_FOLDER}/summary.txt", "w") as f:
-        f.write(f"BIT_LENGTH = {BIT_LENGTH}\nNO_TRAIN = {NO_TRAIN}\nNO_TEST = {NO_TEST}\nNO_FEATURES = {NO_FEATURES}\nMAKE_POLY = {MAKE_POLY}\nLIM_MODELS = {LIM_MODELS}\nmoduli = {moduli}\n")
+        f.write(f"BIT_LENGTH = {BIT_LENGTH}\nNO_TRAIN = {NO_TRAIN}\nNO_TEST = {NO_TEST}\nNO_MODS = {NO_MODS}\nMAKE_POLY = {MAKE_POLY}\nLIM_MODELS = {LIM_MODELS}\nmoduli = {moduli}\nno_moduli = {no_moduli}\nno_features = {no_features}\n")
         f.write(f"\n--- over {NO_TEST} runs ---\n")
         f.write(f"average log-likelihood, per residue class: {np.average(allResLiks, axis=0)}\n")
         f.write(f"uniform log-likelihood, per residue class: {resUniformLik}\n")
