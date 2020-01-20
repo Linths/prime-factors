@@ -10,18 +10,18 @@ from itertools import combinations_with_replacement
 from functools import reduce
 from pathlib import Path
 
-WITHOUT_ZERO = True
+WITHOUT_ZERO = False
 
 BIT_LENGTH = 256        # with bit length 256, you get 87 long input, 43 moduli
 NONE = 0
 NO_TRAIN = 40000
 NO_TEST = 1000
-NO_MODS = 5             # Value NONE means no limit
+NO_MODS = NONE          # Value NONE means no limit
 NO_GEN_PRIMES = 40000   # DO NOT CHANGE unless we have generated more primes
-MAKE_POLY = 3           # Value NONE means no added polynomial complexity. WARNING: Polynominials will only be made when #features is limited.
+MAKE_POLY = NONE        # Value NONE means no added polynomial complexity. WARNING: Polynominials will only be made when #features is limited.
 LIM_MODELS = False      # If true, we only use #NO_MODS models
 DATA_FOLDER = "data"
-DATA_SUBFOLDER = f"{DATA_FOLDER}/without_zero"
+DATA_SUBFOLDER = f"{DATA_FOLDER}/with_zero_original"
 STATS_FOLDER = f"{DATA_SUBFOLDER}/stats_{BIT_LENGTH}_#{NO_TRAIN}_#{NO_TEST}_{NO_MODS}f{MAKE_POLY}p"
 TRAIN_FILE = f"{DATA_SUBFOLDER}/train_data_{BIT_LENGTH}_#{NO_TRAIN}.p"
 TEST_FILE = f"{DATA_SUBFOLDER}/test_data_{BIT_LENGTH}_#{NO_TEST}.p"
