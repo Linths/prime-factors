@@ -10,23 +10,32 @@ from itertools import combinations_with_replacement
 from functools import reduce
 from pathlib import Path
 
-WITHOUT_ZERO = False
+###### DO NOT CHANGE ################################################################################
+NO_GEN_PRIMES = 40000   # Increase if we have generated more primes                                 #
+NONE = 0                                                                                            #
+DATA_FOLDER = "data"                                                                                #
+#####################################################################################################
 
-BIT_LENGTH = 256        # with bit length 256, you get 87 long input, 43 moduli
-NONE = 0
-NO_TRAIN = 40000
-NO_TEST = 1000
-NO_MODS = NONE          # Value NONE means no limit
-NO_GEN_PRIMES = 40000   # DO NOT CHANGE unless we have generated more primes
-MAKE_POLY = NONE        # Value NONE means no added polynomial complexity. WARNING: Polynominials will only be made when #features is limited.
-LIM_MODELS = False      # If true, we only use #NO_MODS models
-DATA_FOLDER = "data"
-DATA_SUBFOLDER = f"{DATA_FOLDER}/with_zero_original"
-STATS_FOLDER = f"{DATA_SUBFOLDER}/stats_{BIT_LENGTH}_#{NO_TRAIN}_#{NO_TEST}_{NO_MODS}f{MAKE_POLY}p"
-TRAIN_FILE = f"{DATA_SUBFOLDER}/train_data_{BIT_LENGTH}_#{NO_TRAIN}.p"
-TEST_FILE = f"{DATA_SUBFOLDER}/test_data_{BIT_LENGTH}_#{NO_TEST}.p"
-MODEL_FILE = f"{DATA_SUBFOLDER}/models_{BIT_LENGTH}_#{NO_TRAIN}_{NO_MODS}f{MAKE_POLY}p.p"
-PRIME_FILE = f"{DATA_FOLDER}/train_primes_#{NO_GEN_PRIMES}.p"
+###### SETTINGS #####################################################################################
+BIT_LENGTH = 256        # With bit length 256, you get 87 long input, 43 moduli                     #
+NO_TRAIN = 40000                                                                                    #
+NO_TEST = 1000                                                                                      #
+                                                                                                    #
+WITHOUT_ZERO = False    # !!! Use the correct folder to separate between w/ zero and w/0 zero       #
+NO_MODS = NONE          # Value NONE: no limit                                                      #
+MAKE_POLY = NONE        # Value NONE: no added polynomial complexity.                               #
+                        # Polynominials will only be made when #features is limited.                #
+LIM_MODELS = False      # If true, we only build #NO_MODS models instead of all                     #
+DATA_SUBFOLDER = f"{DATA_FOLDER}/with_zero_original"                                                #
+#####################################################################################################
+
+###### DO NOT CHANGE ################################################################################
+STATS_FOLDER = f"{DATA_SUBFOLDER}/stats_{BIT_LENGTH}_#{NO_TRAIN}_#{NO_TEST}_{NO_MODS}f{MAKE_POLY}p" #
+TRAIN_FILE = f"{DATA_SUBFOLDER}/train_data_{BIT_LENGTH}_#{NO_TRAIN}.p"                              #
+TEST_FILE = f"{DATA_SUBFOLDER}/test_data_{BIT_LENGTH}_#{NO_TEST}.p"                                 #
+MODEL_FILE = f"{DATA_SUBFOLDER}/models_{BIT_LENGTH}_#{NO_TRAIN}_{NO_MODS}f{MAKE_POLY}p.p"           #
+PRIME_FILE = f"{DATA_FOLDER}/train_primes_#{NO_GEN_PRIMES}.p"                                       #
+#####################################################################################################
 
 def train():
     # train_data is a dictionary with as key the specific feature j (the RNS modulo) and as value 
