@@ -182,7 +182,10 @@ def test(models):
         f.write(f"uniform log-likelihood: {uniformLik}\n")
         f.write("\n--- Confusion matrices ---\n")
         for j in moduli:
-            f.write(f"\nresidue class {j}\n{str(confusionMatrices[j])}\n")
+            f.write(f"\nresidue class {j}\n")
+            for row in confusionMatrices[j]:
+                f.write('\t'.join([str(cell) for cell in row]))
+                f.write('\n')
     print("Testing done.")
 
 def findPeriodicDist(n1, n2, j):
