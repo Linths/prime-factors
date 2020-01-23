@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from itertools import combinations_with_replacement
 from functools import reduce
 from pathlib import Path
+from sklearn.metrics import confusion_matrix
 
 ###### DO NOT CHANGE ################################################################################
 NO_GEN_PRIMES = 40000   # Increase if we have generated more primes                                 #
@@ -34,6 +35,7 @@ STATS_FOLDER = f"{DATA_SUBFOLDER}/stats_{BIT_LENGTH}_#{NO_TRAIN}_#{NO_TEST}_{NO_
 TRAIN_FILE = f"{DATA_SUBFOLDER}/train_data_{BIT_LENGTH}_#{NO_TRAIN}.p"                              #
 TEST_FILE = f"{DATA_SUBFOLDER}/test_data_{BIT_LENGTH}_#{NO_TEST}.p"                                 #
 MODEL_FILE = f"{DATA_SUBFOLDER}/models_{BIT_LENGTH}_#{NO_TRAIN}_{NO_MODS}f{MAKE_POLY}p.p"           #
+MODEL_WEIGHTS_FILE = f"{DATA_SUBFOLDER}/models_{BIT_LENGTH}_#{NO_TRAIN}_{NO_MODS}f{MAKE_POLY}.txt"  #
 PRIME_FILE = f"{DATA_FOLDER}/train_primes_#{NO_GEN_PRIMES}.p"                                       #
 #####################################################################################################
 
@@ -90,9 +92,11 @@ def test(models):
     resUniformLik = np.asarray([np.log(1/(j-1)) for j in moduli])
     uniformLik = sum(resUniformLik)
     allNormLiks = {j : [] for j in moduli}    # key residues, value list of norm_likelihoods
+    actResidues = {j : np.zeros(len(inputs), dtype=int) for j in moduli} # np.zeros(j-int(WITHOUT_ZERO)
+    predResidues = {j : np.zeros(len(inputs), dtype=int) for j in moduli}
 
     # Predict prime factors
-    for i in inputs:
+    for index, i in enumerate(inputs):
         bools = []
         resLikLog = []
         ranks = []
@@ -104,6 +108,10 @@ def test(models):
             
             actual = i.output_OG % j
             predicted = max(norm_likelihoods, key=norm_likelihoods.get)
+            actResidues[j][index] = actual #-int(WITHOUT_ZERO)
+            predResidues[j][index] = predicted #-int(WITHOUT_ZERO)
+            # actResidues[j][actual-int(WITHOUT_ZERO)] += 1
+            # predResidues[j][predicted-int(WITHOUT_ZERO)] += 1
             
             rankActual = sorted(norm_likelihoods, key=norm_likelihoods.get, reverse=True).index(actual) / (j-1-int(WITHOUT_ZERO))
             ranks.append(rankActual)
@@ -129,21 +137,26 @@ def test(models):
     # Show average norm_likelihoods per residue class
     Path(STATS_FOLDER).mkdir(exist_ok=True)
     for j in moduli:
-        plt.title(f"Normalized likelihoods for residue class {j} averaged over {NO_TEST} runs")
+        plt.title(f"Normalized likelihoods for residue class {j}. Averaged over {NO_TEST} runs")
         plt.bar(tuple(range(int(WITHOUT_ZERO),j)), np.average(allNormLiks[j], axis=0))
         plt.axhline(y=1/(j-int(WITHOUT_ZERO)), linewidth=1, color='r')
         axes = plt.axes()
+        if j < 7:
+            axes.set_xticks(list(range(int(WITHOUT_ZERO),j)))
         # axes.set_ylim([0, 1])
         # plt.show()
+        plt.xlabel("Residue")
+        plt.ylabel("Normalized likelihood")
         plt.savefig(f"{STATS_FOLDER}/normalized likelihoods ({j} of {moduli[-1]}).png")
         plt.close()
     
+    # Show ranks of the actual residue
     allRanks = np.asarray(allRanks)
     avgRanks = np.average(allRanks, axis=0)
     plt.bar(moduli, avgRanks)
-    plt.xlabel("Moduli")
+    plt.xlabel("Residue class")
     plt.ylabel("Normalized rank of the actual residue (0.0 = most likely residue)")
-    plt.title(f"Ranking of the actual residue, per modulo. Averaged over {NO_TEST} runs.")
+    plt.title(f"Likelihood ranking of the actual residue, per residue class.\nAveraged over {NO_TEST} runs.")
     axes = plt.axes()
     axes.set_ylim([0, 1])
     plt.axhline(y=0.5, linewidth=1, color='r')
@@ -155,6 +168,11 @@ def test(models):
     print(f"uniform log-likelihood, per residue class: {resUniformLik}")
     print(f"average log-likelihood: {np.average(allLiks)}")
     print(f"uniform log-likelihood: {uniformLik}")
+
+    # Make confusion matrices
+    confusionMatrices = {j:confusion_matrix(actResidues[j], predResidues[j]) for j in moduli}
+    
+    # Write a summary
     with open(f"{STATS_FOLDER}/summary.txt", "w") as f:
         f.write(f"BIT_LENGTH = {BIT_LENGTH}\nNO_TRAIN = {NO_TRAIN}\nNO_TEST = {NO_TEST}\nNO_MODS = {NO_MODS}\nMAKE_POLY = {MAKE_POLY}\nLIM_MODELS = {LIM_MODELS}\nmoduli = {moduli}\nno_moduli = {no_moduli}\nno_features = {no_features}\n")
         f.write(f"\n--- over {NO_TEST} runs ---\n")
@@ -162,6 +180,9 @@ def test(models):
         f.write(f"uniform log-likelihood, per residue class: {resUniformLik}\n")
         f.write(f"average log-likelihood: {np.average(allLiks)}\n")
         f.write(f"uniform log-likelihood: {uniformLik}\n")
+        f.write("\n--- Confusion matrices ---\n")
+        for j in moduli:
+            f.write(f"\nresidue class {j}\n{str(confusionMatrices[j])}\n")
     print("Testing done.")
 
 def findPeriodicDist(n1, n2, j):
@@ -221,6 +242,11 @@ def limitInputFeatures(dp, num):
         res = [reduce((lambda a,b: a*b), combi) for combi in combinations_with_replacement(temp, MAKE_POLY)]
     
     return DataPair(res, dp.output, dp.input_OG, dp.output_OG)
+
+# def writeModelData(models):
+#     with open(MODEL_WEIGHTS_FILE, "w") as f:
+#         for j,model in models.items():
+#             print(model.w0)
 
 if __name__ == "__main__":
     # semiprimes = readSemiprimes()
