@@ -170,7 +170,7 @@ def test(models):
     print(f"uniform log-likelihood: {uniformLik}")
 
     # Make confusion matrices
-    confusionMatrices = {j:confusion_matrix(actResidues[j], predResidues[j]) for j in moduli}
+    confusionMatrices = {j:confusion_matrix(actResidues[j], predResidues[j], list(range(int(WITHOUT_ZERO), j))) for j in moduli}
     
     # Write a summary
     with open(f"{STATS_FOLDER}/summary.txt", "w") as f:
