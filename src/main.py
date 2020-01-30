@@ -24,9 +24,9 @@ NO_TEST = 1000                                                                  
                                                                                                     #
 WITHOUT_ZERO = True     # !!! Use the correct folder to separate between w/ zero and w/0 zero       #
 NO_MODS = 5             # Value NONE: no limit                                                      #
-MAKE_POLY = NONE        # Value NONE: no added polynomial complexity.                               #
+MAKE_POLY = 3           # Value NONE: no added polynomial complexity.                               #
                         # Polynominials will only be made when #features is limited.                #
-LIM_MODELS = False      # If true, we only build #NO_MODS models instead of all                     #
+LIM_MODELS = True       # If true, we only build #NO_MODS models instead of all                     #
 DATA_SUBFOLDER = f"{DATA_FOLDER}/without_zero"                                                      #
 #####################################################################################################
 
@@ -269,4 +269,4 @@ if __name__ == "__main__":
     # convertToWithoutZero(semiprimes)
     models = train()
     test(models)
-    # writeModelData(models)
+    writeModelData(models)
