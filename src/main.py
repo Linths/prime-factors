@@ -35,7 +35,7 @@ STATS_FOLDER = f"{DATA_SUBFOLDER}/stats_{BIT_LENGTH}_#{NO_TRAIN}_#{NO_TEST}_{NO_
 TRAIN_FILE = f"{DATA_SUBFOLDER}/train_data_{BIT_LENGTH}_#{NO_TRAIN}.p"                              #
 TEST_FILE = f"{DATA_SUBFOLDER}/test_data_{BIT_LENGTH}_#{NO_TEST}.p"                                 #
 MODEL_FILE = f"{DATA_SUBFOLDER}/models_{BIT_LENGTH}_#{NO_TRAIN}_{NO_MODS}f{MAKE_POLY}p.p"           #
-MODEL_WEIGHTS_FILE = f"{DATA_SUBFOLDER}/models_{BIT_LENGTH}_#{NO_TRAIN}_{NO_MODS}f{MAKE_POLY}.txt"  #
+MODEL_WEIGHTS_FILE = f"{DATA_SUBFOLDER}/models_{BIT_LENGTH}_#{NO_TRAIN}_{NO_MODS}f{MAKE_POLY}p.txt" #
 PRIME_FILE = f"{DATA_FOLDER}/train_primes_#{NO_GEN_PRIMES}.p"                                       #
 #####################################################################################################
 
@@ -246,13 +246,26 @@ def limitInputFeatures(dp, num):
     
     return DataPair(res, dp.output, dp.input_OG, dp.output_OG)
 
-# def writeModelData(models):
-#     with open(MODEL_WEIGHTS_FILE, "w") as f:
-#         for j,model in models.items():
-#             print(model.w0)
+def writeModelData(models):
+    with open(MODEL_WEIGHTS_FILE, "w") as f:
+        moduli = list(models)
+        len_wx = len(moduli) * 2 + 1
+        weightMatrix = np.zeros((len(moduli) + 1, len_wx * 2 + 1 + 1), dtype='O')
+        weightMatrix[0] = ["model ->"] + [ f"w^1_{i}" for i in range(0, len_wx) ] + [ f"w^2_{i}" for i in range(0, len_wx) ] + ["sigma"]
+        for i,(j,model) in enumerate(models.items()):
+            weightMatrix[i+1] = [j] + model.w0 + model.w1 + [model.sigma]
+        weightMatrix = np.flip(np.rot90(weightMatrix,3),1)
+        for row in weightMatrix:
+            f.write(f"{sepTab(row)}\n")
+        # for j,model in models.items():
+        #     f.write(f"{j}\nw0\n{sepTab(model.w0)}\n\nw1\n{sepTab(model.w1)}\n\nsigma\n{model.sigma}\n\n")
+
+def sepTab(aList):
+    return '\t'.join([str(x) for x in aList])
 
 if __name__ == "__main__":
     # semiprimes = readSemiprimes()
     # convertToWithoutZero(semiprimes)
     models = train()
-    test(models)
+    # test(models)
+    writeModelData(models)
