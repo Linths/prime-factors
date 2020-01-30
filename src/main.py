@@ -102,7 +102,7 @@ def test(models):
         ranks = []
         # Per modulo, predict the correct residue
         for j, model in models.items():
-            possible_outputs = {res : list(GeneratedData.cos_sin(res, j)) for res in range(int(WITHOUT_ZERO),j)}
+            possible_outputs = {res : list(GeneratedData.cos_sin(res, j)) for res in range(1,j)}
             likelihoods = {res : model.likelihood(DataPair(i.input, out, i.input_OG, res)) for res, out in possible_outputs.items()}
             norm_likelihoods = {res : lik / sum(likelihoods.values()) for res, lik in likelihoods.items()}
             
@@ -113,7 +113,7 @@ def test(models):
             # actResidues[j][actual-int(WITHOUT_ZERO)] += 1
             # predResidues[j][predicted-int(WITHOUT_ZERO)] += 1
             
-            rankActual = sorted(norm_likelihoods, key=norm_likelihoods.get, reverse=True).index(actual) / (j-1-int(WITHOUT_ZERO))
+            rankActual = sorted(norm_likelihoods, key=norm_likelihoods.get, reverse=True).index(actual) / (j-1)
             ranks.append(rankActual)
             # print(norm_likelihoods.get(actual))
             
@@ -138,11 +138,11 @@ def test(models):
     Path(STATS_FOLDER).mkdir(exist_ok=True)
     for j in moduli:
         plt.title(f"Normalized likelihoods for residue class {j}. Averaged over {NO_TEST} runs")
-        plt.bar(tuple(range(int(WITHOUT_ZERO),j)), np.average(allNormLiks[j], axis=0))
-        plt.axhline(y=1/(j-int(WITHOUT_ZERO)), linewidth=1, color='r')
+        plt.bar(tuple(range(1,j)), np.average(allNormLiks[j], axis=0))
+        plt.axhline(y=1/(j-1), linewidth=1, color='r')
         axes = plt.axes()
         if j < 7:
-            axes.set_xticks(list(range(int(WITHOUT_ZERO),j)))
+            axes.set_xticks(list(range(1,j)))
         # axes.set_ylim([0, 1])
         # plt.show()
         plt.xlabel("Residue")
@@ -170,7 +170,7 @@ def test(models):
     print(f"uniform log-likelihood: {uniformLik}")
 
     # Make confusion matrices
-    confusionMatrices = {j:confusion_matrix(actResidues[j], predResidues[j], list(range(int(WITHOUT_ZERO), j))) for j in moduli}
+    confusionMatrices = {j:confusion_matrix(actResidues[j], predResidues[j], list(range(1, j))) for j in moduli}
     
     # Write a summary
     with open(f"{STATS_FOLDER}/summary.txt", "w") as f:
@@ -267,5 +267,5 @@ if __name__ == "__main__":
     # semiprimes = readSemiprimes()
     # convertToWithoutZero(semiprimes)
     models = train()
-    # test(models)
-    writeModelData(models)
+    test(models)
+    # writeModelData(models)
