@@ -23,7 +23,7 @@ NO_TRAIN = 40000                                                                
 NO_TEST = 1000                                                                                      #
                                                                                                     #
 WITHOUT_ZERO = True     # !!! Use the correct folder to separate between w/ zero and w/0 zero       #
-NO_MODS = NONE          # Value NONE: no limit                                                      #
+NO_MODS = 5             # Value NONE: no limit                                                      #
 MAKE_POLY = NONE        # Value NONE: no added polynomial complexity.                               #
                         # Polynominials will only be made when #features is limited.                #
 LIM_MODELS = False      # If true, we only build #NO_MODS models instead of all                     #
@@ -247,10 +247,11 @@ def limitInputFeatures(dp, num):
     return DataPair(res, dp.output, dp.input_OG, dp.output_OG)
 
 def writeModelData(models):
+    moduli = list(models)
+    len_wx = len(list(models.values())[0].w0)
+    # len_wx = len(moduli) * 2 + 1
     with open(MODEL_WEIGHTS_FILE, "w") as f:
-        moduli = list(models)
-        len_wx = len(moduli) * 2 + 1
-        weightMatrix = np.zeros((len(moduli) + 1, len_wx * 2 + 1 + 1), dtype='O')
+        weightMatrix = np.zeros((len(moduli) + 1, len_wx * 2 + 2), dtype='O')
         weightMatrix[0] = ["model ->"] + [ f"w^1_{i}" for i in range(0, len_wx) ] + [ f"w^2_{i}" for i in range(0, len_wx) ] + ["sigma"]
         for i,(j,model) in enumerate(models.items()):
             weightMatrix[i+1] = [j] + model.w0 + model.w1 + [model.sigma]
@@ -267,5 +268,5 @@ if __name__ == "__main__":
     # semiprimes = readSemiprimes()
     # convertToWithoutZero(semiprimes)
     models = train()
-    # test(models)
-    writeModelData(models)
+    test(models)
+    # writeModelData(models)
