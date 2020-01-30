@@ -22,12 +22,12 @@ BIT_LENGTH = 256        # With bit length 256, you get 87 long input, 43 moduli 
 NO_TRAIN = 40000                                                                                    #
 NO_TEST = 1000                                                                                      #
                                                                                                     #
-WITHOUT_ZERO = False    # !!! Use the correct folder to separate between w/ zero and w/0 zero       #
+WITHOUT_ZERO = True     # !!! Use the correct folder to separate between w/ zero and w/0 zero       #
 NO_MODS = NONE          # Value NONE: no limit                                                      #
 MAKE_POLY = NONE        # Value NONE: no added polynomial complexity.                               #
                         # Polynominials will only be made when #features is limited.                #
 LIM_MODELS = False      # If true, we only build #NO_MODS models instead of all                     #
-DATA_SUBFOLDER = f"{DATA_FOLDER}/with_zero_original"                                                #
+DATA_SUBFOLDER = f"{DATA_FOLDER}/without_zero"                                                      #
 #####################################################################################################
 
 ###### DO NOT CHANGE ################################################################################
@@ -267,5 +267,5 @@ if __name__ == "__main__":
     # semiprimes = readSemiprimes()
     # convertToWithoutZero(semiprimes)
     models = train()
-    test(models)
-    # writeModelData(models)
+    # test(models)
+    writeModelData(models)
