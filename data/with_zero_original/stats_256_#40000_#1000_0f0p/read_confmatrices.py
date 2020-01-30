@@ -17,11 +17,12 @@ for i,mod in enumerate(mods):
     repl = np.arange(0,mod-1)
     
     df_mod = pd.read_excel('ConfMatrices.xlsx', sheet_name='mod%d'%mod, header=None)
-    if mod<13:
-        df_mod.columns = res
-        df_mod = df_mod.rename(index=dict(zip(repl,res)))
-        y_min = mod-1
-    else: y_min = mod
+    # if mod<13:
+        # df_mod.columns = res
+        # df_mod = df_mod.rename(index=dict(zip(repl,res)))
+        # y_min = mod-1
+    # else: 
+    y_min = mod
     
     s = int(mod/2)
     plt.figure(i, figsize=(s,s))
