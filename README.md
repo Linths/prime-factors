@@ -21,7 +21,10 @@ Below, you can click the non-abstract files to navigate to them.
 ### Read it
 
 * Result of training  
-The models are in a self-defined subfolder in `data`, (defined in `MODEL_FOLDER` in [`main.py`](src/main.py)). One system model is actually a dictionary of LMGS models, to make up a full prediction system.
+  * `models_XXX.p`  
+  The models are in a self-defined subfolder in `data`, (defined in `MODEL_FOLDER` in [`main.py`](src/main.py)). One system model is actually a dictionary of LMGS models, to make up a full prediction system.
+  * `models_XXX.txt`  
+  The weights of the models in human-readable format. This file is only written along with the model file if specified.
 * Result of testing  
 The stats are in a stats folder within the aforementioned self-defined subfolder (defined in `STATS_FOLDER` in [`main.py`](src/main.py)). It contains:
   * `summary.txt`  
@@ -34,6 +37,7 @@ The stats are in a stats folder within the aforementioned self-defined subfolder
 ### Tweak it
 
 To tweak the program, change in [`main.py`](src/main.py) the appropriate global variables that are in the _Settings_ block. These are the following variables. If a model doesn't already exist for the specified settings, it will train one using the pre-generated prime list `train_primes_#40000.p`. Note this takes very long. If the pre-generated is not long enough, it will generate new primes. This will add to the training time.
+
 * `BIT_LENGTH` of the semiprime
 * `NO_TRAIN` number of train samples
 * `NO_TEST` number of test samples
