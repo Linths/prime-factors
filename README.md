@@ -10,9 +10,7 @@ RSA is one of the most prominent forms of encryption nowadays. Its security depe
 
 ## Instructions
 
-Python 3.7 is advised. Several libraries are necessary; standard ones (`numpy`, `sklearn`, `matplotlib`, etc.), but most importantly `Crypto` if you want to generate new primes.
-Below, you can click the non-abstract files to navigate to them.
-
+Python 3.7 is advised. Several libraries are necessary; standard ones (`numpy`, `sklearn`, `matplotlib`, etc.), but most importantly the `pycryptodome` library. It is used for randomly prime generation. **Warning: do not install the `pycrypto` library, because this causes problems with running the code.**
 ### Run it
 
 1. If you do not want to test the model or write the model weights, uncomment the corresponding lines at the very end of [`main.py`](src/main.py).
