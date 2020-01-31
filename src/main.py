@@ -1,4 +1,4 @@
-from generate_data2 import *
+from generate_data import *
 # from RNS import RNS
 from lmgs import *
 import pickle
@@ -12,7 +12,7 @@ from pathlib import Path
 from sklearn.metrics import confusion_matrix
 
 ###### DO NOT CHANGE ################################################################################
-NO_GEN_PRIMES = 40000   # Increase if we have generated more primes                                 #
+NO_GEN_PRIMES = 40000   # Increase only if we have generated more primes                            #
 NONE = 0                                                                                            #
 DATA_FOLDER = "data"                                                                                #
 #####################################################################################################
@@ -23,10 +23,10 @@ NO_TRAIN = 40000                                                                
 NO_TEST = 1000                                                                                      #
                                                                                                     #
 WITHOUT_ZERO = True     # !!! Use the correct folder to separate between w/ zero and w/0 zero       #
-NO_MODS = 5             # Value NONE: no limit                                                      #
-MAKE_POLY = 3           # Value NONE: no added polynomial complexity.                               #
+NO_MODS = NONE          # Value NONE: no limit                                                      #
+MAKE_POLY = NONE        # Value NONE: no added polynomial complexity.                               #
                         # Polynominials will only be made when #features is limited.                #
-LIM_MODELS = True       # If true, we only build #NO_MODS models instead of all                     #
+LIM_MODELS = False      # If true, we only build #NO_MODS models instead of all                     #
 DATA_SUBFOLDER = f"{DATA_FOLDER}/without_zero"                                                      #
 #####################################################################################################
 
@@ -265,8 +265,6 @@ def sepTab(aList):
     return '\t'.join([str(x) for x in aList])
 
 if __name__ == "__main__":
-    # semiprimes = readSemiprimes()
-    # convertToWithoutZero(semiprimes)
     models = train()
     test(models)
     writeModelData(models)
