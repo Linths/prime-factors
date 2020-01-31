@@ -33,14 +33,14 @@ The stats are in a stats folder within the aforementioned self-defined subfolder
 
 ### Tweak it
 
-To tweak the program, change in [`main.py`](src/main.py) the appriopiate global variables that are in the _Settings_ block. These are the following variables. If a model doesn't already exist for the specified settings, it will train one using the pre-generated prime list [`train_primes_#40000.p`](data/train_primes_#40000.p). Note this takes very long. If the pre-generated is not long enough, it will generate new primes. This will add to the training time.
+To tweak the program, change in [`main.py`](src/main.py) the appropriate global variables that are in the _Settings_ block. These are the following variables. If a model doesn't already exist for the specified settings, it will train one using the pre-generated prime list [`train_primes_#40000.p`](data/train_primes_#40000.p). Note this takes very long. If the pre-generated is not long enough, it will generate new primes. This will add to the training time.
 * `BIT_LENGTH`: of the semiprime
 * `NO_TRAIN`: number of train samples
 * `NO_TEST`: number of test samples
 * `WITHOUT_ZERO`: whether the sine/cosine translation ignores the zero point
 * `NO_MODS`: number of residue classes used for features
 * `MAKE_POLY`: add polynomial features of a certain degree
-* `LIM_MODELS`: speed up the process by only predicting the first residues of the primefactor
+* `LIM_MODELS`: speed up the process by only predicting the first residues of the prime factor
 * `DATA_SUBFOLDER`: specify a folder name to separate data
 
 ## Copyright
