@@ -1,6 +1,6 @@
 # Prime factors :1234::crystal_ball:
 
-:page_facing_up: _Factorization Learning Large Factorizing semiprimes using ML & RNS_ (Dorenbos et al., 2020)  
+:page_facing_up: _Factorization Learning: Factorizing Semiprimes Using ML & RNS_ (Dorenbos et al., 2020)  
 :pencil2: Haico Dorenbos, Lindsay Kempen, Michelle Peters and Eric van Schaik  
 :books: Full text [requestable](mailto:research@linths.com)
 
